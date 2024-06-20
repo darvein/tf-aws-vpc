@@ -20,11 +20,7 @@ resource "aws_subnet" "public" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = each.value.subnet_cidr
   availability_zone = each.value.availability_zone
-  
-  tags = merge(var.tags, 
-    { 
-      Name = format("%s-public", var.tags.Customer)
-    }
+  tags = merge(var.tags, { Name = format("%s-public", var.tags.Customer) }
   )
 }
 
@@ -34,11 +30,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = each.value.subnet_cidr
   availability_zone = each.value.availability_zone
-  
-  tags = merge(var.tags, 
-    { 
-      Name = format("%s-private", var.tags.Customer)
-    }
+  tags = merge(var.tags, { Name = format("%s-private", var.tags.Customer) }
   )
 }
 
@@ -48,10 +40,33 @@ resource "aws_subnet" "internal" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = each.value.subnet_cidr
   availability_zone = each.value.availability_zone
-  
-  tags = merge(var.tags, 
-    { 
-      Name = format("%s-internal", var.tags.Customer)
-    }
+  tags = merge(var.tags, { Name = format("%s-internal", var.tags.Customer) }
   )
+}
+
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.this.id
+
+  tags = merge(var.tags, {
+    "Name" = format("%s-%s-igw", var.tags.Customer, var.tags.Environment)
+  })
+}
+
+resource "aws_eip" "nat_eips" {
+  count = length(var.private_subnets)
+  
+  tags = var.tags
+}
+
+resource "aws_nat_gateway" "this" {
+  count = length(var.private_subnets)
+
+  allocation_id = aws_eip.nat_eips[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+
+  tags = merge(var.tags, {
+    "Name" = format("%s-%s-natgw", var.tags.Customer, var.tags.Environment)
+  })
+
+  depends_on = [aws_internet_gateway.this]
 }

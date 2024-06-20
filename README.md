@@ -5,12 +5,16 @@ This will deploy a simple VPC Setup on AWS.
 ## Features
 - AWS VPC Resource Creation :laughing:
 
+## Dependencies
+- This module depends on the TF Module `@darvein/tf-tags`
+
 ## TODOS
-- VPC resource
+- [DONE] VPC resource
 - Subnets
     - Public, Private, Internal
     - Routes
     - IGW, NATGW
+        - Evaluate Single NATGW and Multiple NATGWs
 - NACls
 - Default SGs
 - Internal Subnets

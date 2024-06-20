@@ -20,8 +20,12 @@ locals {
   public_subnets   = [for idx, az in local.az_names : { subnet_cidr = local.public_subnet_cidrs[idx], availability_zone = az }]
   private_subnets  = [for idx, az in local.az_names : { subnet_cidr = local.private_subnet_cidrs[idx], availability_zone = az }]
   internal_subnets = [for idx, az in local.az_names : { subnet_cidr = local.internal_subnet_cidrs[idx], availability_zone = az }]
+}
 
-  common_tags = {
+module "tags" {
+  source = "github.com/darvein/tf-tags?ref=v0.1"
+
+  tags = {
     Environment = "Development"
     Customer = "ACME"
     Team     = "Nextbrave"
@@ -36,7 +40,8 @@ module "vpc" {
   private_subnets  = local.private_subnets
   internal_subnets = local.internal_subnets
 
-  tags = merge(local.common_tags, {
+  #tags = merge(local.common_tags, {
+  tags = merge(module.tags.all, {
     Tier = "Network"
   })
 }
